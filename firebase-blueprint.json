@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System users and their roles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "Access level" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Configuration": {
+      "title": "Configuration",
+      "description": "System wide configuration settings",
+      "type": "object",
+      "properties": {
+        "engineStatus": { "type": "string", "enum": ["ACTIVE", "MAINTENANCE"] },
+        "neuralFrequency": { "type": "string" },
+        "announcement": { "type": "string" }
+      }
+    },
+    "AccessKey": {
+      "title": "AccessKey",
+      "description": "License keys for user access",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "expiry": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["min", "hour", "day", "month", "year", "lifetime"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["key", "type", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile and permissions"
+    },
+    "/config/system": {
+      "schema": "Configuration",
+      "description": "System settings"
+    },
+    "/keys/{keyId}": {
+      "schema": "AccessKey",
+      "description": "Stored license keys"
+    }
+  }
+}
