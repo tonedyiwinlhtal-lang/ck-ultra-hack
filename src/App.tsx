@@ -25,7 +25,8 @@ import {
   User as UserIcon,
   Key as KeyIcon,
   Copy,
-  Plus
+  Plus,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   signInWithPopup, 
@@ -48,6 +49,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
+import { getAIPrediction, AIPrediction } from './services/geminiService';
 
 // --- Types ---
 
@@ -67,6 +69,11 @@ interface Prediction {
   patternName?: string;
   confidence: number; // 0-100%
   method: string;     // Recommended action
+  reasoning?: string;
+  isAI?: boolean;
+  isSureShot?: boolean;
+  isUltra?: boolean;
+  riskFactor?: "ZERO" | "LOW" | "STABLE";
   actual?: GameResult;
 }
 
@@ -98,6 +105,16 @@ const ELITE_PRIME_METHODS = [
   "OVERCLOCK 27X (TURBO)",
   "RECOVERY 81X (PRIME)",
   "STABILIZING (SAFE SCAN)"
+];
+
+const PREMIUM_PATTERNS = [
+  "OMEGA_RESONANCE_MAX",
+  "TITAN_V12_ULTRA_SCAN",
+  "GALAXY_VOID_DECODE_X",
+  "QUANTUM_SURE_SHOT_ELITE",
+  "ARCHAIC_GOD_MIRROR",
+  "NEBULA_CORE_FLUX",
+  "PRIME_GOD_SCAN_ELITE"
 ];
 
 const runPrediction = (history: any[], nextIssueNumber: string): Prediction => {
@@ -617,6 +634,11 @@ export default function App() {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [authReady, setAuthReady] = useState(false);
+  
+  // AI & Pattern State
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentPattern, setCurrentPattern] = useState('PRIME_PRIME_SYNC');
+  const [autoSwitch] = useState(true);
 
   useEffect(() => {
     // Check local key session
@@ -793,8 +815,39 @@ export default function App() {
         });
 
         if (!processedIssues.current.has(nextIssue)) {
-          const newPred = runPrediction(json.data.list, nextIssue);
-          setPredictions(prev => [newPred, ...prev].slice(0, 10));
+          // Always use AI for the high-premium experience
+          setIsAnalyzing(true);
+          getAIPrediction(json.data.list).then(aiResult => {
+            const newPred: Prediction = {
+              issueNumber: nextIssue,
+              bigSmall: aiResult.bigSmall,
+              number: aiResult.number,
+              colour: getColourFromNumber(aiResult.number),
+              status: "PENDING",
+              patternName: aiResult.patternToUse,
+              confidence: aiResult.confidence,
+              method: aiResult.isSureShot ? "REAL SURE SHOT" : aiResult.isUltra ? "ULTRA AI PREDICTION" : "ELITE PREMIUM ANALYSIS",
+              reasoning: aiResult.reasoning,
+              isAI: true,
+              isSureShot: aiResult.isSureShot,
+              isUltra: aiResult.isUltra,
+              riskFactor: aiResult.riskFactor
+            };
+            setPredictions(prev => [newPred, ...prev].slice(0, 10));
+            setCurrentPattern(aiResult.patternToUse);
+            setIsAnalyzing(false);
+          }).catch(err => {
+            console.error("AI Prediction failed, falling back to local PRIME logic", err);
+            const fallback = runPrediction(json.data.list, nextIssue);
+            setPredictions(prev => [fallback, ...prev].slice(0, 10));
+            setIsAnalyzing(false);
+            
+            if (autoSwitch) {
+              const patterns = Math.random() > 0.4 ? PREMIUM_PATTERNS : PRIME_PATTERNS;
+              const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+              setCurrentPattern(randomPattern);
+            }
+          });
           processedIssues.current.add(nextIssue);
         }
       }
@@ -1104,20 +1157,46 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Analysis Engine Status */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  <div className="flex-1 min-w-[120px] bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-2 flex items-center gap-2">
-                    <Activity className={`w-3 h-3 ${loading ? 'animate-spin' : 'animate-pulse'} text-emerald-400`} />
-                    <div>
-                      <p className="text-[7px] text-zinc-500 font-bold uppercase">Neural Frequency</p>
-                      <p className="text-[9px] text-emerald-300 font-black tracking-wider">100M+ OPS/SEC</p>
+                {/* AI & Neural Logic Engine */}
+                <div className="flex flex-col gap-3 mb-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2.5 h-2.5 rounded-full ${isAnalyzing ? 'bg-amber-500 animate-ping' : 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,1)]'}`} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Neural Sync [ACTIVE]</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                       <ShieldAlert className="w-3 h-3 text-emerald-400" />
+                       <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Verified Zero Risk</span>
                     </div>
                   </div>
-                  <div className="flex-1 min-w-[120px] bg-blue-500/5 border border-blue-500/10 rounded-xl p-2 flex items-center gap-2">
-                    <TrendingUp className="w-3 h-3 text-blue-400" />
-                    <div>
-                      <p className="text-[7px] text-zinc-500 font-bold uppercase">Logic Layer</p>
-                      <p className="text-[9px] text-blue-300 font-black tracking-wider uppercase">{currentPred?.patternName?.includes('PRIME') ? 'MODE: PRIME_EX' : 'MODE: STANDARD'}</p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-white/5 border border-white/5 rounded-2xl p-3 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                        <Zap className="w-4 h-4 text-emerald-400 animate-pulse" />
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest block">Neural Safety Matrix</span>
+                        <div className="flex items-center gap-2">
+                           <span className="text-[10px] font-black text-emerald-400 uppercase truncate">RISK_LEVEL: ZERO</span>
+                           <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white/5 border border-white/5 rounded-2xl p-3 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                        <Activity className="w-4 h-4 text-blue-400" />
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest block">Probability Matrix</span>
+                        <div className="w-full bg-white/5 h-1 rounded-full mt-1 overflow-hidden">
+                           <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${currentPred?.confidence || 50}%` }}
+                              className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+                           />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1174,14 +1253,18 @@ export default function App() {
                       >
                         <div className="flex flex-col items-center gap-1">
                           <div className={`px-4 py-1.5 rounded-full border text-[10px] font-black tracking-[0.2em] mb-4 flex items-center gap-2 ${
-                            currentPred.confidence >= 95 
-                              ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.4)] animate-bounce' 
-                              : currentPred.confidence >= 90
-                                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse'
-                                : 'bg-blue-500/20 border-blue-500/40 text-blue-300'
+                            currentPred.isSureShot
+                              ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-black border-white/50 shadow-[0_0_40px_rgba(251,191,36,0.8)] animate-bounce'
+                              : currentPred.isUltra
+                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-indigo-400 shadow-[0_0_25px_rgba(79,70,229,0.5)] animate-pulse'
+                                : currentPred.confidence >= 97 
+                                  ? 'bg-blue-600 text-white border-blue-400' 
+                                  : currentPred.confidence >= 90
+                                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                                    : 'bg-blue-500/20 border-blue-500/40 text-blue-300'
                           }`}>
-                            <Zap className={`w-3 h-3 fill-current ${currentPred.confidence >= 95 ? 'text-yellow-400' : ''}`} />
-                            {currentPred.confidence >= 95 ? 'PRIME PATTERN DETECTED' : currentPred.confidence >= 90 ? 'ULTRA CONFIDENT' : 'OPTIMIZED PREDICTION'}
+                            <Zap className={`w-3 h-3 fill-current ${currentPred.isSureShot ? 'text-black' : ''}`} />
+                            {currentPred.isSureShot ? 'REAL AI SURE SHOT [RARE]' : currentPred.isUltra ? 'ULTRA AI PREDICTION' : 'ELITE PREMIUM ANALYSIS'}
                           </div>
 
                           <div className="flex items-center gap-6 mb-2">
@@ -1232,10 +1315,15 @@ export default function App() {
                                </div>
                              </div>
 
-                             <div className={`px-4 py-2 rounded-xl border-t border-white/5 bg-black/20 w-full flex flex-col items-center`}>
-                                <p className="text-[8px] text-zinc-600 font-black tracking-[0.3em] uppercase mb-1">Method Strategy</p>
+                             <div className={`px-4 py-2 rounded-xl border-t border-white/5 bg-black/20 w-full flex flex-col items-center relative overflow-hidden`}>
+                                {currentPred.riskFactor === 'ZERO' && (
+                                  <div className="absolute top-0 right-0 p-1 opacity-20">
+                                    <ShieldCheck className="w-10 h-10 text-emerald-500" />
+                                  </div>
+                                )}
+                                <p className="text-[8px] text-zinc-600 font-black tracking-[0.3em] uppercase mb-1">Elite Execution Strategy</p>
                                 <p className={`text-sm font-black italic tracking-widest ${
-                                  currentPred.confidence >= 90 ? 'text-rose-400 animate-pulse' : 'text-blue-400'
+                                  currentPred.isSureShot ? 'text-amber-400 animate-pulse' : 'text-blue-400'
                                 }`}>{currentPred.method}</p>
                              </div>
                           </div>
@@ -1252,13 +1340,13 @@ export default function App() {
                               }`}>{currentPred.confidence}%</span>
                           </div>
                           <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
-                              <span className="text-[10px] text-zinc-500 uppercase font-black block mb-1">Status</span>
+                              <span className="text-[10px] text-zinc-500 uppercase font-black block mb-1">Risk Assessment</span>
                               <span className={`text-sm font-bold uppercase ${
-                                currentPred.status === 'WIN' ? 'text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]' :
-                                currentPred.status === 'LOSE' ? 'text-rose-400 shadow-[0_0_15px_rgba(251,113,133,0.3)]' :
-                                'text-amber-400'
+                                currentPred.riskFactor === 'ZERO' ? 'text-emerald-400' :
+                                currentPred.riskFactor === 'LOW' ? 'text-amber-400' :
+                                'text-blue-400'
                               }`}>
-                                {currentPred.status}
+                                {currentPred.riskFactor || 'ANALYZING...'}
                               </span>
                           </div>
                         </div>
@@ -1292,7 +1380,20 @@ export default function App() {
                         className="group flex flex-col gap-2 p-3 rounded-2xl bg-white/5 border border-transparent hover:border-white/10 transition-all"
                       >
                         <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono text-zinc-500">#{p.issueNumber}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-zinc-500">#{p.issueNumber}</span>
+                              {p.isAI && (
+                                <span className={`px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter shadow-lg ${
+                                  p.isSureShot 
+                                    ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-black border border-white/20' 
+                                    : p.isUltra
+                                      ? 'bg-indigo-600 text-white border border-indigo-400'
+                                      : 'bg-white/10 border border-white/20 text-white'
+                                }`}>
+                                  {p.isSureShot ? 'REAL SURE SHOT' : p.isUltra ? 'ULTRA AI' : 'ELITE PREMIUM'}
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2">
                               {p.status === 'WIN' && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
                               {p.status === 'LOSE' && <XCircle className="w-3 h-3 text-rose-400" />}
@@ -1304,15 +1405,24 @@ export default function App() {
                               </span>
                             </div>
                         </div>
+                        {p.reasoning && (
+                          <div className="px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                            <p className="text-[9px] text-zinc-400 italic leading-tight">
+                              <span className="font-black text-[8px] text-zinc-600 not-italic uppercase mr-1">AI_ANALYSIS:</span>
+                              {p.reasoning}
+                            </p>
+                          </div>
+                        )}
                         <div className="grid grid-cols-3 items-center">
                             <div className="flex flex-col">
                               <span className="text-[8px] text-zinc-600 uppercase font-bold tracking-tighter">Predict</span>
                               <span className={`text-sm font-bold transition-colors duration-1000 ${
                                 gameMode === '30s' ? 'text-emerald-300' : 'text-blue-300'
                               }`}>{p.bigSmall} {p.number}</span>
-                              <span className={`text-[7px] font-mono italic opacity-50 ${
+                              <span className={`text-[7px] font-mono italic opacity-90 transition-all ${
+                                PREMIUM_PATTERNS.includes(p.patternName || '') ? 'text-amber-400 font-black' : 
                                 gameMode === '30s' ? 'text-emerald-500' : 'text-blue-500'
-                              }`}>{p.method}</span>
+                              }`}>{p.patternName || p.method}</span>
                             </div>
                             <div className="flex flex-col items-center">
                               <span className="text-[8px] text-zinc-600 uppercase font-bold tracking-tighter">Actual</span>

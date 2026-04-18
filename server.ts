@@ -37,7 +37,7 @@ async function startServer() {
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(10000)
-      });
+      } as any);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -46,10 +46,10 @@ async function startServer() {
       }
 
       const data = await response.json();
-      res.json(data);
-    } catch (error: any) {
-      console.error("Proxy error:", error.message);
-      res.status(500).json({ error: "Failed to fetch from CK API", message: error.message });
+      return res.json(data);
+    } catch (err: any) {
+      console.error("Proxy error:", err.message);
+      return res.status(500).json({ error: "Failed to fetch from CK API", message: err.message });
     }
   });
 
