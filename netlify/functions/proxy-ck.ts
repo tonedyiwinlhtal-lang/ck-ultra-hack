@@ -16,11 +16,11 @@ const handler: Handler = async (event) => {
     
     // Mode-specific signatures
     const config = typeId === 30 ? {
-      random: clientRandom || "5fb4c1ab71314e2a949693aad756e8eb",
-      signature: clientSignature || "945BAE7252F35D7060AEBAA63E0C9C2E"
+      random: clientRandom || "aa618332d21c4f9284608bc44ea56f99",
+      signature: clientSignature || "E93CB5E32C267A49A1090589E4E5CB29"
     } : {
-      random: clientRandom || "d94b2f0328ad4ed79835b0ab6f2face2",
-      signature: clientSignature || "07A0AFC40AF08DF42F50DFB8EBF21251"
+      random: clientRandom || "f668d82e6eb14697b0dac9fa1a180658",
+      signature: clientSignature || "4EF4BD40988824BEFD7B012D1E5C2F84"
     };
 
     const upstreamBody = {
@@ -39,7 +39,7 @@ const handler: Handler = async (event) => {
         "Content-Type": "application/json;charset=UTF-8",
         "Accept": "application/json, text/plain, */*",
         "Authorization": event.headers.authorization || "",
-        "Ar-Origin": "https://www.cklottery.online",
+        "Ar-Origin": "https://www.cklottery.top",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       },
       body: JSON.stringify(upstreamBody)

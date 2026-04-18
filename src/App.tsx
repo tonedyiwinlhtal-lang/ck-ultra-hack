@@ -685,14 +685,14 @@ export default function App() {
 
     const typeId = gameMode === '30s' ? 30 : 1;
     
-    const token30s = systemConfig?.token30s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2MzU5MzgwIiwibmJmIjoiMTc3NjM1OTM4MCIsImV4cCI6IjE3NzYzNjExODAiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE3LzIwMjYgMTI6MDk6NDAgQU0iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBY2Nlc3NfVG9rZW4iLCJVc2VySWQiOiI0ODcyMDMiLCJVc2VyTmFtZSI6Ijk1OTc3NzU0NTU4OSIsIlVzZXJQYW1lIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6IkgiLCJMb2dpblRpbWUiOiI0LzE2LzIwMjYgMTE6Mzk6NDAgUE0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yMi4yMzIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTczIiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.jB4iZbNFqiYDoRzTfs_xXcs4faeou-CI1MfSxiju4Hg';
-    const token60s = systemConfig?.token60s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2MzQyMzY0IiwibmJmIjoiMTc3NjM1OTM4MCIsImV4cCI6IjE3NzYzNDQxNjQiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE2LzIwMjYgNzoyNjowNCBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiMTcuMzciLCJJbnRlZ3JhbCI6IjAiLCJMb2dpbk1hcmsiOiJINSIsIkxvZ2luVGltZSI6IjQvMTYvMjAyNiA2OjU2OjA0IFBNIiwiTG9naW5JUEFkZHJlc3MiOiIyMDIuMTkxLjEwNC4yMDkiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTY3IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.-WB6k3PZVn4OrdxhgK8jrDWmWXpiTFLvp0euxOysk3A';
+    const token30s = systemConfig?.token30s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
+    const token60s = systemConfig?.token60s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
     
     // Fallback static signatures if not in config
-    const sig30 = systemConfig?.sig30 || '945BAE7252F35D7060AEBAA63E0C9C2E';
-    const sig60 = systemConfig?.sig60 || '07A0AFC40AF08DF42F50DFB8EBF21251';
-    const rand30 = systemConfig?.rand30 || '5fb4c1ab71314e2a949693aad756e8eb';
-    const rand60 = systemConfig?.rand60 || 'd94b2f0328ad4ed79835b0ab6f2face2';
+    const sig30 = systemConfig?.sig30 || 'E93CB5E32C267A49A1090589E4E5CB29';
+    const sig60 = systemConfig?.sig60 || '4EF4BD40988824BEFD7B012D1E5C2F84';
+    const rand30 = systemConfig?.rand30 || 'aa618332d21c4f9284608bc44ea56f99';
+    const rand60 = systemConfig?.rand60 || 'f668d82e6eb14697b0dac9fa1a180658';
 
     try {
       const res = await fetch('/api/proxy-ck', {
@@ -710,7 +710,17 @@ export default function App() {
       
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        setError(errJson.error || `Server Response: ${res.status}`);
+        let errMsg = errJson.error || `Server Response: ${res.status}`;
+        
+        // Specific error handling for upstream token issues
+        if (errMsg === "Upstream API error") {
+          errMsg = "Protocol Authentication Failed (Token Expired) [ကုဒ်ဟောင်းသွားပါပြီ]";
+          if (errJson.details) {
+            console.error("Upstream Details:", errJson.details);
+          }
+        }
+        
+        setError(errMsg);
         return;
       }
 
@@ -1280,10 +1290,40 @@ export default function App() {
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3 text-rose-200 text-sm mb-4"
+            className="group relative bg-[#1a0b0e] border border-rose-500/30 p-5 rounded-3xl flex flex-col gap-3 shadow-[0_0_30px_rgba(244,63,94,0.1)] mb-4"
           >
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            {error}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30 shadow-inner">
+                <AlertCircle className="w-6 h-6 text-rose-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-0.5">Neural System Alert [သတိပေးချက်]</p>
+                <p className="text-sm font-bold text-rose-100/90 leading-tight">{error}</p>
+              </div>
+            </div>
+            
+            {(isAdminUser || currentUser?.email === 'khaingminthant86@gmail.com') && error.includes('Expired') && (
+              <div className="mt-2 pt-4 border-t border-rose-500/10 flex flex-col gap-3">
+                <p className="text-[11px] text-zinc-400 leading-relaxed italic">
+                  Admin, tokens are expired. Please update "Bearer Token" and "Signature" in Protocol Config.
+                  [Admin, protocol tokenကုန်သွားပါပြီ။ Admin Panel တွင် token အသစ်ပြန်ထည့်ပေးပါ။]
+                </p>
+                <button 
+                  onClick={() => setShowAdmin(true)}
+                  className="w-full py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-100 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Repair Protocol [ပြင်ဆင်မည်]
+                </button>
+              </div>
+            )}
+            
+            <button 
+              onClick={() => setError(null)}
+              className="absolute top-4 right-4 text-zinc-600 hover:text-zinc-400 p-1"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
           </motion.div>
         )}
 
