@@ -367,20 +367,49 @@ const LoginPage = ({ onLogin }: { onLogin: (isAdmin: boolean) => void }) => {
 const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [systemConfig, setSystemConfig] = useState<any>(null);
   const [newAnnouncement, setNewAnnouncement] = useState('');
+  const [token30s, setToken30s] = useState('');
+  const [token60s, setToken60s] = useState('');
+  const [sig30, setSig30] = useState('');
+  const [sig60, setSig60] = useState('');
+  const [rand30, setRand30] = useState('');
+  const [rand60, setRand60] = useState('');
   const [keys, setKeys] = useState<any[]>([]);
   const [keyType, setKeyType] = useState('day');
   const [durationValue, setDurationValue] = useState(1);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubConfig = onSnapshot(doc(db, 'config', 'system'), (doc) => {
-      setSystemConfig(doc.data());
+    const unsubConfig = onSnapshot(doc(db, 'config', 'system'), (snapshot) => {
+      const data = snapshot.data();
+      setSystemConfig(data);
+      if (data) {
+        setNewAnnouncement(data.announcement || '');
+        setToken30s(data.token30s || '');
+        setToken60s(data.token60s || '');
+        setSig30(data.sig30 || '');
+        setSig60(data.sig60 || '');
+        setRand30(data.rand30 || '');
+        setRand60(data.rand60 || '');
+      }
     });
     const unsubKeys = onSnapshot(query(collection(db, 'keys'), where('isActive', '==', true)), (snap) => {
       setKeys(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     return () => { unsubConfig(); unsubKeys(); };
   }, []);
+
+  const saveConfig = async () => {
+    await setDoc(doc(db, 'config', 'system'), { 
+      announcement: newAnnouncement,
+      token30s,
+      token60s,
+      sig30,
+      sig60,
+      rand30,
+      rand60
+    }, { merge: true });
+    alert("System Configuration Synchronized!");
+  };
 
   const generateKey = async () => {
     const randomKey = Array.from({ length: 16 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
@@ -434,26 +463,55 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
-          {/* Announcements */}
-          <section className="bg-white/5 border border-white/5 rounded-2xl p-6">
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-4">Neural Broadcast</p>
-            <div className="flex gap-2">
-              <input 
+          {/* Announcements & Config */}
+          <section className="bg-white/5 border border-white/5 rounded-2xl p-6 space-y-4">
+            <div>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-4">Neural Broadcast & Protocol Config</p>
+              <textarea 
                 value={newAnnouncement}
                 onChange={(e) => setNewAnnouncement(e.target.value)}
                 placeholder="Global announcement text..."
-                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors"
+                rows={2}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors mb-4"
               />
-              <button 
-                onClick={async () => {
-                  await setDoc(doc(db, 'config', 'system'), { announcement: newAnnouncement }, { merge: true });
-                  setNewAnnouncement('');
-                }}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest px-6 rounded-xl transition-all"
-              >
-                Post
-              </button>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
+                <p className="text-[9px] text-emerald-500 font-black uppercase">30S API Protocol</p>
+                <input 
+                  value={token30s}
+                  onChange={(e) => setToken30s(e.target.value)}
+                  placeholder="30S Bearer Token"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-zinc-300 focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <input value={sig30} onChange={(e) => setSig30(e.target.value)} placeholder="Signature" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
+                  <input value={rand30} onChange={(e) => setRand30(e.target.value)} placeholder="Random" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
+                </div>
+              </div>
+
+              <div className="space-y-4 p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl">
+                <p className="text-[9px] text-blue-500 font-black uppercase">60S API Protocol</p>
+                <input 
+                  value={token60s}
+                  onChange={(e) => setToken60s(e.target.value)}
+                  placeholder="60S Bearer Token"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-zinc-300 focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <input value={sig60} onChange={(e) => setSig60(e.target.value)} placeholder="Signature" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
+                  <input value={rand60} onChange={(e) => setRand60(e.target.value)} placeholder="Random" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={saveConfig}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg shadow-blue-600/20"
+            >
+              Update Neural Protocol & Broadcast
+            </button>
           </section>
 
           {/* Key Generator */}
@@ -593,12 +651,21 @@ export default function App() {
   const [gameMode, setGameMode] = useState<'30s' | '60s'>('30s');
   const [lastResults, setLastResults] = useState<GameResult[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [systemConfig, setSystemConfig] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mmTime, setMmTime] = useState<string>('');
   
   const processedIssues = useRef(new Set<string>());
   const loadingRef = useRef(false);
+
+  // Global Config Listener
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'config', 'system'), (doc) => {
+      setSystemConfig(doc.data());
+    });
+    return () => unsub();
+  }, []);
 
   // Clear state on mode switch
   useEffect(() => {
@@ -618,9 +685,14 @@ export default function App() {
 
     const typeId = gameMode === '30s' ? 30 : 1;
     
-    // Use correct token for each mode
-    const token30s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2MzU5MzgwIiwibmJmIjoiMTc3NjM1OTM4MCIsImV4cCI6IjE3NzYzNjExODAiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE3LzIwMjYgMTI6MDk6NDAgQU0iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBY2Nlc3NfVG9rZW4iLCJVc2VySWQiOiI0ODcyMDMiLCJVc2VyTmFtZSI6Ijk1OTc3NzU0NTU4OSIsIlVzZXJQYW1lIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6IkgiLCJMb2dpblRpbWUiOiI0LzE2LzIwMjYgMTE6Mzk6NDAgUE0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yMi4yMzIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTczIiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.jB4iZbNFqiYDoRzTfs_xXcs4faeou-CI1MfSxiju4Hg';
-    const token60s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2MzQyMzY0IiwibmJmIjoiMTc3NjM1OTM4MCIsImV4cCI6IjE3NzYzNDQxNjQiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE2LzIwMjYgNzoyNjowNCBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiMTcuMzciLCJJbnRlZ3JhbCI6IjAiLCJMb2dpbk1hcmsiOiJINSIsIkxvZ2luVGltZSI6IjQvMTYvMjAyNiA2OjU2OjA0IFBNIiwiTG9naW5JUEFkZHJlc3MiOiIyMDIuMTkxLjEwNC4yMDkiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTY3IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.-WB6k3PZVn4OrdxhgK8jrDWmWXpiTFLvp0euxOysk3A';
+    const token30s = systemConfig?.token30s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2MzU5MzgwIiwibmJmIjoiMTc3NjM1OTM4MCIsImV4cCI6IjE3NzYzNjExODAiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE3LzIwMjYgMTI6MDk6NDAgQU0iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBY2Nlc3NfVG9rZW4iLCJVc2VySWQiOiI0ODcyMDMiLCJVc2VyTmFtZSI6Ijk1OTc3NzU0NTU4OSIsIlVzZXJQYW1lIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6IkgiLCJMb2dpblRpbWUiOiI0LzE2LzIwMjYgMTE6Mzk6NDAgUE0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yMi4yMzIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTczIiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.jB4iZbNFqiYDoRzTfs_xXcs4faeou-CI1MfSxiju4Hg';
+    const token60s = systemConfig?.token60s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2MzQyMzY0IiwibmJmIjoiMTc3NjM1OTM4MCIsImV4cCI6IjE3NzYzNDQxNjQiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE2LzIwMjYgNzoyNjowNCBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiMTcuMzciLCJJbnRlZ3JhbCI6IjAiLCJMb2dpbk1hcmsiOiJINSIsIkxvZ2luVGltZSI6IjQvMTYvMjAyNiA2OjU2OjA0IFBNIiwiTG9naW5JUEFkZHJlc3MiOiIyMDIuMTkxLjEwNC4yMDkiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTY3IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.-WB6k3PZVn4OrdxhgK8jrDWmWXpiTFLvp0euxOysk3A';
+    
+    // Fallback static signatures if not in config
+    const sig30 = systemConfig?.sig30 || '945BAE7252F35D7060AEBAA63E0C9C2E';
+    const sig60 = systemConfig?.sig60 || '07A0AFC40AF08DF42F50DFB8EBF21251';
+    const rand30 = systemConfig?.rand30 || '5fb4c1ab71314e2a949693aad756e8eb';
+    const rand60 = systemConfig?.rand60 || 'd94b2f0328ad4ed79835b0ab6f2face2';
 
     try {
       const res = await fetch('/api/proxy-ck', {
@@ -629,7 +701,11 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${gameMode === '30s' ? token30s : token60s}`
         },
-        body: JSON.stringify({ typeId })
+        body: JSON.stringify({ 
+          typeId,
+          signature: gameMode === '30s' ? sig30 : sig60,
+          random: gameMode === '30s' ? rand30 : rand60
+        })
       });
       
       if (!res.ok) {
@@ -817,8 +893,8 @@ export default function App() {
                 <KeyIcon className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-black tracking-tight text-white leading-tight">GUEST SCANNER</p>
-                <p className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-tight">KEY AUTHORIZED</p>
+                <p className="text-[10px] font-black tracking-tight text-white leading-tight">GUEST SCANNER [ဧည့်သည်]</p>
+                <p className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-tight">KEY AUTHORIZED [ကုဒ်ဖြည့်ပြီး]</p>
               </div>
             </>
           )}
@@ -830,7 +906,7 @@ export default function App() {
               onClick={() => setShowAdmin(true)}
               className="p-1.5 rounded-full hover:bg-white/5 text-rose-500 transition-all transform active:scale-95"
             >
-              <ShieldAlert className="w-4 h-4" />
+              <UserIcon className="w-4 h-4" />
             </button>
           ) : (
             <button 
@@ -937,7 +1013,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold block">Accuracy</span>
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold block"> Accuracy [တိကျမှု]</span>
                     <p className={`text-xl font-black font-mono transition-colors duration-1000 ${gameMode === '30s' ? 'text-emerald-400' : 'text-blue-400'}`}>{winRate}%</p>
                   </div>
                 </div>
@@ -1006,9 +1082,9 @@ export default function App() {
                         <div className={`w-20 h-20 rounded-full border-4 border-white/5 flex items-center justify-center animate-spin ${
                           gameMode === '30s' ? 'border-t-emerald-500' : 'border-t-blue-500'
                         }`}>
-                          <Loader2 className={`w-8 h-8 opacity-50 ${gameMode === '30s' ? 'text-emerald-500' : 'text-blue-500'}`} />
+                          <Loader2 className={`w-8 h-8 opacity-50 ${gameMode === '30s' ? 'text-emerald-400' : 'text-blue-400'}`} />
                         </div>
-                        <p className="text-sm text-zinc-400 italic">Synchronizing Prime Patterns...</p>
+                        <p className="text-sm text-zinc-400 italic">Synchronizing Patterns... [ဒေတာရှာဖွေနေသည်]</p>
                       </motion.div>
                     ) : (
                       <motion.div 
@@ -1119,7 +1195,7 @@ export default function App() {
               <div className="bg-[#0d121f]/50 backdrop-blur-md rounded-3xl border border-white/5 p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <History className={`w-4 h-4 transition-colors duration-1000 ${gameMode === '30s' ? 'text-emerald-500' : 'text-blue-500'}`} />
-                  <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400">Analysis Records</h3>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400">Analysis Records [မှတ်တမ်းများ]</h3>
                 </div>
 
                 <div className="space-y-3">

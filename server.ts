@@ -15,16 +15,20 @@ async function startServer() {
   // Proxy endpoint for CK Ultra Hack API
   app.post("/api/proxy-ck", async (req, res) => {
     try {
-      const { typeId = 1 } = req.body;
+      const { 
+        typeId = 1, 
+        signature: clientSignature, 
+        random: clientRandom 
+      } = req.body;
       const timestamp = Math.floor(Date.now() / 1000);
       
-      // Mode-specific signatures
+      // Mode-specific signatures from request (if provided) or fallback defaults
       const config = typeId === 30 ? {
-        random: "5fb4c1ab71314e2a949693aad756e8eb",
-        signature: "945BAE7252F35D7060AEBAA63E0C9C2E"
+        random: clientRandom || "5fb4c1ab71314e2a949693aad756e8eb",
+        signature: clientSignature || "945BAE7252F35D7060AEBAA63E0C9C2E"
       } : {
-        random: "d94b2f0328ad4ed79835b0ab6f2face2",
-        signature: "07A0AFC40AF08DF42F50DFB8EBF21251"
+        random: clientRandom || "d94b2f0328ad4ed79835b0ab6f2face2",
+        signature: clientSignature || "07A0AFC40AF08DF42F50DFB8EBF21251"
       };
 
       const body = {
