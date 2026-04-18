@@ -1079,12 +1079,32 @@ export default function App() {
                         exit={{ opacity: 0 }}
                         className="flex flex-col items-center gap-4 text-center"
                       >
-                        <div className={`w-20 h-20 rounded-full border-4 border-white/5 flex items-center justify-center animate-spin ${
-                          gameMode === '30s' ? 'border-t-emerald-500' : 'border-t-blue-500'
-                        }`}>
-                          <Loader2 className={`w-8 h-8 opacity-50 ${gameMode === '30s' ? 'text-emerald-400' : 'text-blue-400'}`} />
-                        </div>
-                        <p className="text-sm text-zinc-400 italic">Synchronizing Patterns... [ဒေတာရှာဖွေနေသည်]</p>
+                        {error ? (
+                          <div className="flex flex-col items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl max-w-[280px]">
+                            <div className="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center">
+                              <ShieldAlert className="w-5 h-5 text-rose-500" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Neural Error</p>
+                              <p className="text-[11px] text-zinc-400 leading-relaxed truncate max-w-[200px]">{error}</p>
+                            </div>
+                            <button 
+                              onClick={() => fetchResults(true)}
+                              className="px-4 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                            >
+                              Force Retry [ထပ်ကြိုးစားမည်]
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={`w-20 h-20 rounded-full border-4 border-white/5 flex items-center justify-center animate-spin ${
+                              gameMode === '30s' ? 'border-t-emerald-500' : 'border-t-blue-500'
+                            }`}>
+                              <Loader2 className={`w-8 h-8 opacity-50 ${gameMode === '30s' ? 'text-emerald-400' : 'text-blue-400'}`} />
+                            </div>
+                            <p className="text-sm text-zinc-400 italic">Synchronizing Patterns... [ဒေတာရှာဖွေနေသည်]</p>
+                          </>
+                        )}
                       </motion.div>
                     ) : (
                       <motion.div 
