@@ -205,7 +205,7 @@ const runPrediction = (history: any[], nextIssueNumber: string): Prediction => {
 
 // --- Components ---
 
-const LoginPage = ({ onLogin }: { onLogin: (isAdmin: boolean) => void }) => {
+const LoginPage = ({ onLogin }: { onLogin: (isAdmin: boolean, key?: string) => void }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [accessKey, setAccessKey] = useState('');
@@ -236,7 +236,7 @@ const LoginPage = ({ onLogin }: { onLogin: (isAdmin: boolean) => void }) => {
         expiry: expiry ? expiry.getTime() : null
       }));
 
-      onLogin(false);
+      onLogin(false, accessKey.trim());
     } catch (err: any) {
       setError(err.message || "Key verification failed.");
     } finally {
@@ -614,6 +614,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [isKeyAuthorized, setIsKeyAuthorized] = useState(false);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [authReady, setAuthReady] = useState(false);
 
@@ -622,12 +623,14 @@ export default function App() {
     const checkKeySession = () => {
       const session = localStorage.getItem('neural_key_session');
       if (session) {
-        const { expiry } = JSON.parse(session);
+        const { key, expiry } = JSON.parse(session);
         if (!expiry || new Date() < new Date(expiry)) {
           setIsKeyAuthorized(true);
+          setActiveKey(key);
         } else {
           localStorage.removeItem('neural_key_session');
           setIsKeyAuthorized(false);
+          setActiveKey(null);
         }
       }
     };
@@ -648,12 +651,35 @@ export default function App() {
     return () => unsubAuth();
   }, []);
 
+  // Active Key Monitor - Realtime enforcement for logout on key deletion/deactivation
+  useEffect(() => {
+    if (!activeKey || isAdminUser) return;
+
+    const q = query(
+      collection(db, 'keys'), 
+      where('key', '==', activeKey),
+      where('isActive', '==', true)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) {
+        // Key is gone or deactivated
+        localStorage.removeItem('neural_key_session');
+        setIsKeyAuthorized(false);
+        setActiveKey(null);
+      }
+    });
+
+    return () => unsub();
+  }, [activeKey, isAdminUser]);
+
   const [gameMode, setGameMode] = useState<'30s' | '60s'>('30s');
   const [lastResults, setLastResults] = useState<GameResult[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [systemConfig, setSystemConfig] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [mmTime, setMmTime] = useState<string>('');
   
   const processedIssues = useRef(new Set<string>());
@@ -685,10 +711,13 @@ export default function App() {
 
     const typeId = gameMode === '30s' ? 30 : 1;
     
-    const token30s = systemConfig?.token30s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
-    const token60s = systemConfig?.token60s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
+    // Hardcoded high-priority tokens from the user
+    const token30s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
+    const token60s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
     
-    // Fallback static signatures if not in config
+    // Use systemConfig if present, otherwise use the latest hardcoded ones
+    const activeToken30s = systemConfig?.token30s || token30s;
+    const activeToken60s = systemConfig?.token60s || token60s;
     const sig30 = systemConfig?.sig30 || 'E93CB5E32C267A49A1090589E4E5CB29';
     const sig60 = systemConfig?.sig60 || '4EF4BD40988824BEFD7B012D1E5C2F84';
     const rand30 = systemConfig?.rand30 || 'aa618332d21c4f9284608bc44ea56f99';
@@ -699,12 +728,18 @@ export default function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${gameMode === '30s' ? token30s : token60s}`
+          'Authorization': `Bearer ${gameMode === '30s' ? activeToken30s : activeToken60s}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify(gameMode === '30s' ? { 
           typeId,
-          signature: gameMode === '30s' ? sig30 : sig60,
-          random: gameMode === '30s' ? rand30 : rand60
+          signature: sig30,
+          random: rand30
+        } : {
+          pageSize: 10,
+          pageNo: 1,
+          typeId,
+          signature: sig60,
+          random: rand60
         })
       });
       
@@ -713,11 +748,14 @@ export default function App() {
         let errMsg = errJson.error || `Server Response: ${res.status}`;
         
         // Specific error handling for upstream token issues
-        if (errMsg === "Upstream API error") {
+        if (errMsg.includes("Upstream API error")) {
           errMsg = "Protocol Authentication Failed (Token Expired) [ကုဒ်ဟောင်းသွားပါပြီ]";
           if (errJson.details) {
             console.error("Upstream Details:", errJson.details);
+            setErrorDetails(errJson.details);
           }
+        } else {
+          setErrorDetails(null);
         }
         
         setError(errMsg);
@@ -856,8 +894,11 @@ export default function App() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <LoginPage onLogin={(isAdmin) => {
-            if (!isAdmin) setIsKeyAuthorized(true);
+          <LoginPage onLogin={(isAdmin, key) => {
+            if (!isAdmin) {
+              setIsKeyAuthorized(true);
+              if (key) setActiveKey(key);
+            }
           }} />
         </motion.div>
       </AnimatePresence>
@@ -1097,6 +1138,11 @@ export default function App() {
                             <div>
                               <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Neural Error</p>
                               <p className="text-[11px] text-zinc-400 leading-relaxed truncate max-w-[200px]">{error}</p>
+                              {errorDetails && (
+                                <p className="text-[9px] text-rose-300 font-mono mt-2 bg-rose-950/50 p-2 rounded border border-rose-500/20 break-all select-all">
+                                  {errorDetails}
+                                </p>
+                              )}
                             </div>
                             <button 
                               onClick={() => fetchResults(true)}
@@ -1299,6 +1345,11 @@ export default function App() {
               <div className="flex-1">
                 <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-0.5">Neural System Alert [သတိပေးချက်]</p>
                 <p className="text-sm font-bold text-rose-100/90 leading-tight">{error}</p>
+                {errorDetails && (
+                  <p className="text-[10px] text-rose-300/80 font-mono mt-2 bg-rose-950/30 p-2 rounded border border-rose-500/10 break-all select-all">
+                    {errorDetails}
+                  </p>
+                )}
               </div>
             </div>
             
