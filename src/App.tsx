@@ -732,14 +732,16 @@ export default function App() {
         },
         body: JSON.stringify(gameMode === '30s' ? { 
           typeId,
-          signature: sig30,
-          random: rand30
+          language: 0,
+          random: rand30,
+          signature: sig30
         } : {
           pageSize: 10,
           pageNo: 1,
           typeId,
-          signature: sig60,
-          random: rand60
+          language: 0,
+          random: rand60,
+          signature: sig60
         })
       });
       

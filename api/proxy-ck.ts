@@ -9,9 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const bodyData = req.body || {};
     const timestamp = Math.floor(Date.now() / 1000);
     
-    // Transparently pass through the body to avoid signature mismatches
     const body = {
-      language: 0,
       ...bodyData,
       timestamp: bodyData.timestamp || timestamp
     };
@@ -22,9 +20,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "Content-Type": "application/json;charset=UTF-8",
         "Accept": "application/json, text/plain, */*",
         "Authorization": req.headers.authorization || "",
-        "Ar-Origin": "https://www.cklottery.top",
-        "Referer": "https://www.cklottery.top/",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "Ar-Origin": "https://www.cklottery.online",
+        "Referer": "https://www.cklottery.online/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept-Language": "en-US,en;q=0.9"
       },
       body: JSON.stringify(body)
     });
