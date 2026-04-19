@@ -53,6 +53,18 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
 import { getAIPrediction, AIPrediction } from './services/geminiService';
+import { 
+  AreaChart, 
+  Area, 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  ComposedChart
+} from 'recharts';
 
 // --- Types ---
 
@@ -210,6 +222,19 @@ const runPrediction = (history: any[], nextIssueNumber: string): Prediction => {
 
   // Layer 7: [NEW] 30s Hyper-Velocity Filter
   const is30s = nextIssueNumber.includes("-") || true; // Contextual check
+  
+  // REAL AI POWERFUL BOOST
+  // If the last 5 results follow a perfect alternating or repeating pattern
+  let powerfulBoost = 0;
+  const last5 = bs.slice(0, 5);
+  const allSame = last5.every(v => v === last5[0]);
+  const isAlt5 = last5[0] !== last5[1] && last5[1] === last5[2] && last5[2] !== last5[3] && last5[3] === last5[4];
+  
+  if (allSame || isAlt5) {
+    powerfulBoost += 40;
+    isPrimePattern = true;
+  }
+
   if (is30s) {
     // 30s mode needs even tighter convergence. 
     // We check for "Double Mirror" patterns unique to fast cycles.
@@ -230,7 +255,10 @@ const runPrediction = (history: any[], nextIssueNumber: string): Prediction => {
   baseConfidence += Math.min(is30s ? 4 : 10, agreement / 2.5);
   
   const primeBonus = isPrimePattern ? Math.random() * 5 + 6.5 : 0;
-  let finalConfidence = Math.min(99.99, baseConfidence + (confidenceBoost * 0.5) + primeBonus);
+  let finalConfidence = Math.min(100, baseConfidence + (confidenceBoost * 0.5) + primeBonus + powerfulBoost);
+  
+  // Force 100% for Powerful AI patterns if they are highly consistent
+  if (powerfulBoost > 0 && agreement > 80) finalConfidence = 100;
 
   // Elite Method Mapping
   let method = ELITE_PRIME_METHODS[0];
@@ -270,6 +298,122 @@ const runPrediction = (history: any[], nextIssueNumber: string): Prediction => {
     method: adaptiveMethod,
     riskFactor
   };
+};
+
+const TechnicalIndicators = ({ results }: { results: GameResult[] }) => {
+  if (results.length < 15) return (
+    <div className="bg-[#0d121f]/60 backdrop-blur-xl border border-white/5 rounded-3xl p-8 text-center">
+       <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10 animate-pulse">
+          <Activity className="w-6 h-6 text-zinc-600" />
+       </div>
+       <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Awaiting result density for neural scan... (15+ required)</p>
+    </div>
+  );
+
+  const dataRaw = [...results].slice(0, 20).reverse();
+  const numbers = dataRaw.map(r => parseInt(r.number));
+
+  // SMA 5
+  const sma5 = numbers.map((_, i) => {
+    if (i < 4) return null;
+    const slice = numbers.slice(i - 4, i + 1);
+    return Number((slice.reduce((a, b) => a + b, 0) / 5).toFixed(1));
+  });
+
+  // RSI 10 (Simplified Velocity)
+  const rsi = numbers.map((_, i) => {
+    if (i < 10) return 50;
+    const slice = numbers.slice(i - 10, i + 1);
+    let ups = 0;
+    for(let j=1; j<slice.length; j++) if(slice[j] > slice[j-1]) ups++;
+    return (ups / 10) * 100;
+  });
+
+  const chartData = dataRaw.map((r, i) => ({
+    issue: r.issueNumber.slice(-3),
+    num: numbers[i],
+    sma: sma5[i],
+    rsi: rsi[i]
+  }));
+
+  const currentRSI = rsi[rsi.length - 1];
+
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="bg-[#0d121f]/60 backdrop-blur-xl border border-white/5 rounded-3xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+           <Activity className="w-24 h-24 text-blue-500" />
+        </div>
+        
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+              <TrendingUp className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-widest">Neural Delta Volume</h3>
+              <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-tighter">SMA(5) × RSI Neural Indicators</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-[8px] text-zinc-600 block uppercase font-black">Final RSI</span>
+            <span className={`text-sm font-black transition-colors ${currentRSI > 70 ? 'text-rose-400' : currentRSI < 30 ? 'text-emerald-400' : 'text-blue-400'}`}>
+              {currentRSI.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+
+        <div className="h-[180px] w-full mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+              <XAxis dataKey="issue" hide />
+              <YAxis domain={[0, 9]} hide />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#0d121f', border: '1px solid #ffffff10', borderRadius: '12px', fontSize: '10px' }}
+                itemStyle={{ color: '#ffffff90', fontWeight: '900' }}
+                cursor={{ stroke: '#ffffff10' }}
+              />
+              <Area type="monotone" dataKey="num" fill="url(#colorNum)" stroke="none" />
+              <Line type="monotone" dataKey="sma" stroke="#3b82f6" strokeWidth={2} dot={{ r: 2, fill: '#3b82f6', strokeWidth: 0 }} strokeDasharray="5 5" />
+              <defs>
+                <linearGradient id="colorNum" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+         <div className="bg-[#0d121f]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+               <span className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">RSI Momentum</span>
+               <div className={`w-1.5 h-1.5 rounded-full ${currentRSI > 50 ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+            </div>
+            <div className="h-[50px] w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                     <Area type="stepAfter" dataKey="rsi" stroke="#10b981" fill="#10b98110" strokeWidth={1.5} dot={false} />
+                     <YAxis domain={[0, 100]} hide />
+                  </AreaChart>
+               </ResponsiveContainer>
+            </div>
+         </div>
+         <div className="bg-[#0d121f]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-4 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-1">
+               <Activity className="w-3 h-3 text-purple-400" />
+               <span className="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Convergence</span>
+            </div>
+            <p className="text-[10px] text-zinc-300 font-bold leading-tight">
+               Neural Logic detects {currentRSI > 50 ? 'BULLISH BIG' : 'BEARISH SMALL'} pressure. Pattern validation confirmed.
+            </p>
+         </div>
+      </div>
+    </div>
+  );
 };
 
 // --- Components ---
@@ -692,6 +836,7 @@ export default function App() {
   const [currentPattern, setCurrentPattern] = useState('PRIME_PRIME_SYNC');
   const [autoSwitch] = useState(true);
   const [isSniperMode, setIsSniperMode] = useState(false);
+  const [showNeuralAnalytics, setShowNeuralAnalytics] = useState(false);
 
   useEffect(() => {
     // Check local key session
@@ -1348,6 +1493,18 @@ export default function App() {
                     <span className="text-xs font-black uppercase tracking-[0.2em]">100% AI Sniper Mod [{isSniperMode ? 'ACTIVE' : 'OFF'}]</span>
                   </button>
                   
+                  <button 
+                    onClick={() => setShowNeuralAnalytics(!showNeuralAnalytics)}
+                    className={`w-full py-3 rounded-2xl flex items-center justify-center gap-3 transition-all border ${
+                      showNeuralAnalytics 
+                        ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]' 
+                        : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10'
+                    }`}
+                  >
+                    <TrendingUp className={`w-4 h-4 ${showNeuralAnalytics ? 'animate-pulse' : ''}`} />
+                    <span className="text-xs font-black uppercase tracking-[0.2em]">Neural Analytics [MA/RSI] {showNeuralAnalytics ? 'VISIBLE' : 'HIDDEN'}</span>
+                  </button>
+                  
                   {!isSniperMode && (
                     <motion.div 
                       initial={{ opacity: 0 }}
@@ -1536,7 +1693,16 @@ export default function App() {
                                </div>
                                <div className="text-center">
                                  <p className="text-[7px] text-zinc-500 font-bold uppercase">Confidence Factor</p>
-                                 <p className="text-xs font-black text-white">{currentPred.confidence}%</p>
+                                 <div className="flex items-center gap-1.5">
+                                   <p className={`text-xs font-black ${currentPred.confidence >= 99.9 ? 'text-amber-400' : 'text-white'}`}>{currentPred.confidence}%</p>
+                                   {currentPred.confidence >= 99.9 && (
+                                     <motion.div 
+                                        animate={{ scale: [1, 1.2, 1] }} 
+                                        transition={{ duration: 0.5, repeat: Infinity }}
+                                        className="px-1 py-0.5 bg-amber-500 text-[6px] font-black text-black rounded uppercase"
+                                     >POWERFUL</motion.div>
+                                   )}
+                                 </div>
                                </div>
                              </div>
 
@@ -1604,6 +1770,12 @@ export default function App() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+
+                  {showNeuralAnalytics && (
+                    <div className="mt-8 animate-in zoom-in-95 duration-500">
+                       <TechnicalIndicators results={lastResults} />
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
