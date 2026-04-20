@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/proxy-ck", "destination": "/api/proxy-ck.ts" },
+    { "source": "/api/proxy-trx", "destination": "/api/proxy-trx.ts" },
     { "source": "/api/(.*)", "destination": "/api/$1.ts" }
   ]
 }
