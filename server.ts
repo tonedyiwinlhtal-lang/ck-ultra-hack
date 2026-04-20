@@ -53,6 +53,46 @@ async function startServer() {
     }
   });
 
+  // Proxy endpoint for TRX API
+  app.post("/api/proxy-trx", async (req, res) => {
+    try {
+      const bodyData = req.body || {};
+      const timestamp = Math.floor(Date.now() / 1000);
+
+      const body = {
+        ...bodyData,
+        timestamp: bodyData.timestamp || timestamp
+      };
+
+      const response = await fetch("https://ckygjf6r.com/api/webapi/GetTRXNoaverageEmerdList", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+          "Accept": "application/json, text/plain, */*",
+          "Authorization": req.headers.authorization || "",
+          "Ar-Origin": "https://www.cklottery.top",
+          "Referer": "https://www.cklottery.top/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(10000)
+      } as any);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Upstream error (${response.status}):`, errorText);
+        return res.status(response.status).json({ error: "Upstream API error", details: errorText });
+      }
+
+      const data = await response.json();
+      return res.json(data);
+    } catch (err: any) {
+      console.error("Proxy error:", err.message);
+      return res.status(500).json({ error: "Failed to fetch from TRX API", message: err.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

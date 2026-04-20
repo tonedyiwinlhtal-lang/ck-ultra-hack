@@ -29,7 +29,7 @@ export interface AIPrediction {
   isQuotaMode?: boolean;
 }
 
-export const getAIPrediction = async (history: any[], isSniperMode: boolean = false): Promise<AIPrediction> => {
+export const getAIPrediction = async (history: any[], isSniperMode: boolean = false, gameMode: string = '60s'): Promise<AIPrediction> => {
   const lastQuotaErrorTime = getQuotaCooldown();
   
   // Check Circuit Breaker
@@ -73,7 +73,7 @@ export const getAIPrediction = async (history: any[], isSniperMode: boolean = fa
   const historyStr = history.map(h => `Issue: ${h.issueNumber}, Number: ${h.number}, Result: ${parseInt(h.number) >= 5 ? 'BIG' : 'SMALL'}`).join('\n');
 
   // Define dynamic instructions based on mode
-  const gameInfo = isSniperMode ? "SNIPER_CORE" : (historyStr.includes("30s") ? "HYPER_30S_CORE" : "ULTRA_60S_CORE");
+  const gameInfo = isSniperMode ? "SNIPER_CORE" : (gameMode === '30s' ? "HYPER_30S_CORE" : (gameMode === 'trx' ? "BLOCKCHAIN_TRX_CORE" : "ULTRA_60S_CORE"));
 
   const modeSpecificInstruction = isSniperMode 
     ? `SNIPER MODE PROTOCOL [STRICT]:
@@ -83,7 +83,7 @@ export const getAIPrediction = async (history: any[], isSniperMode: boolean = fa
 - If this is matches 1 or 2 of the sequence, set "isScanning": true and "isSniper": false.
 - In Analyst phase ("isScanning": true), provide a placeholder prediction but focus on the "reasoning" of why you are scanning.
 - In Hit phase ("isSniper": true), provide your absolute 99.9% precision prediction.`
-    : historyStr.includes("30s") 
+    : gameMode === '30s' 
       ? `HYPER 30S MODE [ZERO DEFECT TARGET]:
 - TARGET: 98% WIN RATE across 100 matches.
 - Use velocity-based trend analysis. 30s games have tighter recurrence loops.
@@ -91,7 +91,13 @@ export const getAIPrediction = async (history: any[], isSniperMode: boolean = fa
 - Set "isScanning": false.
 - Set "isSniper": false.
 - Tiers: ULTRA AI (99%+), ELITE PREMIUM (97-98.9%).`
-      : `STANDARD ULTRA AI MODE [MAX STABILITY]:
+      : gameMode === 'trx'
+        ? `TRX BLOCKCHAIN MODE [ENTROPY SCAN]:
+- TARGET: 95% WIN RATE.
+- Analyze TRON block data patterns. Blockchain entropy follow specific cyclical rhythms.
+- Focus on "Number Clustering": TRX games often cluster numbers in specific ranges.
+- Tiers: ULTRA AI (98%+), ELITE PREMIUM (95%+).`
+        : `STANDARD ULTRA AI MODE [MAX STABILITY]:
 - Your target goal is a 90%+ WIN RATE across 10 matches.
 - Perform a recursive validation of your pattern matching. If a pattern has less than 90% historical reliability, switch to a more conservative logic.
 - Set "isScanning": false.
@@ -123,7 +129,7 @@ COMMON RULES:
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Current History:\n${historyStr}\n\nExecute the Arch-Neural Scan. Mode: ${isSniperMode ? 'SNIPER' : 'ULTRA'}.`,
+      contents: `Current History:\n${historyStr}\n\nExecute the Arch-Neural Scan. Mode: ${isSniperMode ? 'SNIPER' : 'ULTRA'}. Mode: ${gameInfo}`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",

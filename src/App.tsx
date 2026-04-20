@@ -582,10 +582,13 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [newAnnouncement, setNewAnnouncement] = useState('');
   const [token30s, setToken30s] = useState('');
   const [token60s, setToken60s] = useState('');
+  const [tokenTrx, setTokenTrx] = useState('');
   const [sig30, setSig30] = useState('');
   const [sig60, setSig60] = useState('');
+  const [sigTrx, setSigTrx] = useState('');
   const [rand30, setRand30] = useState('');
   const [rand60, setRand60] = useState('');
+  const [randTrx, setRandTrx] = useState('');
   const [keys, setKeys] = useState<any[]>([]);
   const [keyType, setKeyType] = useState('day');
   const [durationValue, setDurationValue] = useState(1);
@@ -597,12 +600,15 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
       setSystemConfig(data);
       if (data) {
         setNewAnnouncement(data.announcement || '');
-        setToken30s(data.token30s || '');
-        setToken60s(data.token60s || '');
-        setSig30(data.sig30 || '');
-        setSig60(data.sig60 || '');
-        setRand30(data.rand30 || '');
-        setRand60(data.rand60 || '');
+        setToken30s(data.token30s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NjkyMTIzIiwibmJmIjoiMTc3NjY5MjEyMyIsImV4cCI6IjE3NzY2OTM5MjMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzIwLzIwMjYgODozNToyMyBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNTE2Ljk4IiwiSW50ZWdyYWwiOiIwIiwiTG9naW5NYXJrIjoiSDUiLCJMb2dpblRpbWUiOiI0LzIwLzIwMjYgODowNToyMyBQTSIsIkxvZ2luSVBBZGRyZXNzIjoiNDMuMjE2LjIuMTk3IiwiRGJOdW1iZXIiOiIwIiwiSXN2YWxpZGF0b3IiOiIwIiwiS2V5Q29kZSI6IjU4NiIsIlRva2VuVHlwZSI6IkFjY2Vzc19Ub2tlbiIsIlBob25lVHlwZSI6IjEiLCJVc2VyVHlwZSI6IjAiLCJVc2VyTmFtZTIiOiIiLCJpc3MiOiJqd3RJc3N1ZXIiLCJhdWQiOiJsb3R0ZXJ5VGlja2V0In0.IzeKy7q2efjtWschH0dKqkl0CKnG-jyUj3IS24qqnv4');
+        setToken60s(data.token60s || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NjkyMTIzIiwibmJmIjoiMTc3NjY5MjEyMyIsImV4cCI6IjE3NzY2OTM5MjMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzIwLzIwMjYgODozNToyMyBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNTE2Ljk4IiwiSW50ZWdyYWwiOiIwIiwiTG9naW5NYXJrIjoiSDUiLCJMb2dpblRpbWUiOiI0LzIwLzIwMjYgODowNToyMyBQTSIsIkxvZ2luSVBBZGRyZXNzIjoiNDMuMjE2LjIuMTk3IiwiRGJOdW1iZXIiOiIwIiwiSXN2YWxpZGF0b3IiOiIwIiwiS2V5Q29kZSI6IjU4NiIsIlRva2VuVHlwZSI6IkFjY2Vzc19Ub2tlbiIsIlBob25lVHlwZSI6IjEiLCJVc2VyVHlwZSI6IjAiLCJVc2VyTmFtZTIiOiIiLCJpc3MiOiJqd3RJc3N1ZXIiLCJhdWQiOiJsb3R0ZXJ5VGlja2V0In0.IzeKy7q2efjtWschH0dKqkl0CKnG-jyUj3IS24qqnv4');
+        setTokenTrx(data.tokenTrx || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NjkyMTIzIiwibmJmIjoiMTc3NjY5MjEyMyIsImV4cCI6IjE3NzY2OTM5MjMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzIwLzIwMjYgODozNToyMyBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNTE2Ljk4IiwiSW50ZWdyYWwiOiIwIiwiTG9naW5NYXJrIjoiSDUiLCJMb2dpblRpbWUiOiI0LzIwLzIwMjYgODowNToyMyBQTSIsIkxvZ2luSVBBZGRyZXNzIjoiNDMuMjE2LjIuMTk3IiwiRGJOdW1iZXIiOiIwIiwiSXN2YWxpZGF0b3IiOiIwIiwiS2V5Q29kZSI6IjU4NiIsIlRva2VuVHlwZSI6IkFjY2Vzc19Ub2tlbiIsIlBob25lVHlwZSI6IjEiLCJVc2VyVHlwZSI6IjAiLCJVc2VyTmFtZTIiOiIiLCJpc3MiOiJqd3RJc3N1ZXIiLCJhdWQiOiJsb3R0ZXJ5VGlja2V0In0.IzeKy7q2efjtWschH0dKqkl0CKnG-jyUj3IS24qqnv4');
+        setSig30(data.sig30 || 'E65A7D6B3BC83447EBB7203FFB5F03E6');
+        setSig60(data.sig60 || '60BD292B7E1BE46C28AF3C7ECAA30E62');
+        setSigTrx(data.sigTrx || '27C77305278B3403CC02B8D746A45898');
+        setRand30(data.rand30 || '8b15f4d091e64fbd9bf7519718c921e4');
+        setRand60(data.rand60 || '5a9af45138ca49478b2609d2f89fc4e7');
+        setRandTrx(data.randTrx || 'c185b621bdf64adb8dea945ec68ecc14');
       }
     });
     const unsubKeys = onSnapshot(query(collection(db, 'keys'), where('isActive', '==', true)), (snap) => {
@@ -616,10 +622,13 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
       announcement: newAnnouncement,
       token30s,
       token60s,
+      tokenTrx,
       sig30,
       sig60,
+      sigTrx,
       rand30,
-      rand60
+      rand60,
+      randTrx
     }, { merge: true });
     alert("System Configuration Synchronized!");
   };
@@ -715,6 +724,20 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
                 <div className="flex gap-2">
                   <input value={sig60} onChange={(e) => setSig60(e.target.value)} placeholder="Signature" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
                   <input value={rand60} onChange={(e) => setRand60(e.target.value)} placeholder="Random" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
+                </div>
+              </div>
+
+              <div className="space-y-4 p-4 bg-orange-500/5 border border-orange-500/10 rounded-xl">
+                <p className="text-[9px] text-orange-500 font-black uppercase">TRX API Protocol</p>
+                <input 
+                  value={tokenTrx}
+                  onChange={(e) => setTokenTrx(e.target.value)}
+                  placeholder="TRX Bearer Token"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-zinc-300 focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <input value={sigTrx} onChange={(e) => setSigTrx(e.target.value)} placeholder="Signature" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
+                  <input value={randTrx} onChange={(e) => setRandTrx(e.target.value)} placeholder="Random" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-zinc-400" />
                 </div>
               </div>
             </div>
@@ -823,6 +846,42 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   );
 };
 
+const PredictionCard = ({ prediction, is30s, isTrx }: { prediction: Prediction, is30s: boolean, isTrx: boolean }) => {
+  return (
+    <motion.div 
+      initial={{ y: 5, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className={`p-3 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group transition-all duration-500`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+          is30s ? 'bg-emerald-500/10 border-emerald-500/20' : (isTrx ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20')
+        }`}>
+          <Zap className={`w-4 h-4 ${is30s ? 'text-emerald-400' : (isTrx ? 'text-orange-400' : 'text-blue-400')}`} />
+        </div>
+        <div>
+          <p className="text-[10px] font-black tracking-tight text-white leading-tight">
+            #{prediction.issueNumber}
+          </p>
+          <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest leading-tight">
+            {prediction.patternName || 'Neural Result'}
+          </p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className={`text-sm font-black italic ${
+          prediction.bigSmall === 'BIG' ? 'text-blue-400' : 'text-emerald-400'
+        }`}>
+          {prediction.bigSmall} {prediction.number}
+        </p>
+        <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">
+          Conf: {prediction.confidence}%
+        </p>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
@@ -893,7 +952,7 @@ export default function App() {
     return () => unsub();
   }, [activeKey, isAdminUser]);
 
-  const [gameMode, setGameMode] = useState<'30s' | '60s'>('30s');
+  const [gameMode, setGameMode] = useState<'30s' | '60s' | 'trx'>('30s');
   const [lastResults, setLastResults] = useState<GameResult[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const predictionsRef = useRef<Prediction[]>([]);
@@ -934,40 +993,36 @@ export default function App() {
     setLoading(true);
     loadingRef.current = true;
     setError(null);
+    setErrorDetails(null);
 
-    const typeId = gameMode === '30s' ? 30 : 1;
+    const typeId = gameMode === '30s' ? 30 : (gameMode === '60s' ? 1 : 13);
     
-    // Hardcoded high-priority tokens from the user
-    const token30s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
-    const token60s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NDgwMjM4IiwibmJmIjoiMTc3NjQ4MDIzOCIsImV4cCI6IjE3NzY0ODIwMzgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzE4LzIwMjYgOTo0Mzo1OCBBTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNy4zNyIsIkludGVncmFsIjoiMCIsIkxvZ2luTWFyayI6Ikg1IiwiTG9naW5UaW1lIjoiNC8xOC8yMDI2IDk6MTM6NTggQU0iLCJMb2dpbklQQWRkcmVzcyI6IjQzLjIxNi4yNy4xNDIiLCJEYk51bWJlciI6IjAiLCJJc3ZhbGlkYXRvciI6IjAiLCJLZXlDb2RlIjoiNTc5IiwiVG9rZW5UeXBlIjoiQWNjZXNzX1Rva2VuIiwiUGhvbmVUeXBlIjoiMSIsIlVzZXJUeXBlIjoiMCIsIlVzZXJOYW1lMiI6IiIsImlzcyI6Imp3dElzc3VlciIsImF1ZCI6ImxvdHRlcnlUaWNrZXQifQ.xAr4fLtgBEIZ-n2KYVV84lT4e7thEwxAhNQ16c5Qr2A';
-    
-    // Use systemConfig if present, otherwise use the latest hardcoded ones
-    const activeToken30s = systemConfig?.token30s || token30s;
-    const activeToken60s = systemConfig?.token60s || token60s;
-    const sig30 = systemConfig?.sig30 || 'E93CB5E32C267A49A1090589E4E5CB29';
-    const sig60 = systemConfig?.sig60 || '4EF4BD40988824BEFD7B012D1E5C2F84';
-    const rand30 = systemConfig?.rand30 || 'aa618332d21c4f9284608bc44ea56f99';
-    const rand60 = systemConfig?.rand60 || 'f668d82e6eb14697b0dac9fa1a180658';
+    // Tokens & Protocols
+    const dToken30s = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzc2NjkyMTIzIiwibmJmIjoiMTc3NjY5MjEyMyIsImV4cCI6IjE3NzY2OTM5MjMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiI0LzIwLzIwMjYgODozNToyMyBQTSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFjY2Vzc19Ub2tlbiIsIlVzZXJJZCI6IjQ4NzIwMyIsIlVzZXJOYW1lIjoiOTU5Nzc3NTQ1NTg5IiwiVXNlclBob3RvIjoiMjAiLCJOaWNrTmFtZSI6Ik1HVEhBTlQgIiwiQW1vdW50IjoiNTE2Ljk4IiwiSW50ZWdyYWwiOiIwIiwiTG9naW5NYXJrIjoiSDUiLCJMb2dpblRpbWUiOiI0LzIwLzIwMjYgODowNToyMyBQTSIsIkxvZ2luSVBBZGRyZXNzIjoiNDMuMjE2LjIuMTk3IiwiRGJOdW1iZXIiOiIwIiwiSXN2YWxpZGF0b3IiOiIwIiwiS2V5Q29kZSI6IjU4NiIsIlRva2VuVHlwZSI6IkFjY2Vzc19Ub2tlbiIsIlBob25lVHlwZSI6IjEiLCJVc2VyVHlwZSI6IjAiLCJVc2VyTmFtZTIiOiIiLCJpc3MiOiJqd3RJc3N1ZXIiLCJhdWQiOiJsb3R0ZXJ5VGlja2V0In0.IzeKy7q2efjtWschH0dKqkl0CKnG-jyUj3IS24qqnv4';
+    const dToken60s = dToken30s;
+    const tokenTrx = systemConfig?.tokenTrx || dToken30s;
+    const sigTrx = systemConfig?.sigTrx || '27C77305278B3403CC02B8D746A45898';
+    const randTrx = systemConfig?.randTrx || 'c185b621bdf64adb8dea945ec68ecc14';
+
+    const activeToken = gameMode === '30s' ? (systemConfig?.token30s || dToken30s) : (gameMode === '60s' ? (systemConfig?.token60s || dToken60s) : tokenTrx);
+    const activeSig = gameMode === '30s' ? (systemConfig?.sig30 || 'E65A7D6B3BC83447EBB7203FFB5F03E6') : (gameMode === '60s' ? (systemConfig?.sig60 || '60BD292B7E1BE46C28AF3C7ECAA30E62') : sigTrx);
+    const activeRand = gameMode === '30s' ? (systemConfig?.rand30 || '8b15f4d091e64fbd9bf7519718c921e4') : (gameMode === '60s' ? (systemConfig?.rand60 || '5a9af45138ca49478b2609d2f89fc4e7') : randTrx);
 
     try {
-      const res = await fetch('/api/proxy-ck', {
+      const endpoint = gameMode === 'trx' ? '/api/proxy-trx' : '/api/proxy-ck';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${gameMode === '30s' ? activeToken30s : activeToken60s}`
+          'Authorization': `Bearer ${activeToken}`
         },
-        body: JSON.stringify(gameMode === '30s' ? { 
-          typeId,
-          language: 0,
-          random: rand30,
-          signature: sig30
-        } : {
+        body: JSON.stringify({ 
           pageSize: 10,
           pageNo: 1,
           typeId,
           language: 0,
-          random: rand60,
-          signature: sig60
+          random: activeRand,
+          signature: activeSig
         })
       });
       
@@ -992,12 +1047,14 @@ export default function App() {
 
       const json = await res.json();
       
-      if (json.data && json.data.list) {
-        const results: GameResult[] = json.data.list.map((item: any) => ({
+      const listData = gameMode === 'trx' ? json.data.data.gameslist : json.data.list;
+
+      if (listData) {
+        const results: GameResult[] = listData.map((item: any) => ({
           issueNumber: item.issueNumber,
           number: item.number,
           bigSmall: getBigSmallFromNumber(parseInt(item.number)),
-          colour: getColourFromNumber(parseInt(item.number))
+          colour: item.colour || getColourFromNumber(parseInt(item.number))
         }));
 
         setLastResults(results);
@@ -1056,7 +1113,7 @@ export default function App() {
              }
           }
 
-          getAIPrediction(json.data.list, isSniperMode).then(aiResult => {
+          getAIPrediction(listData, isSniperMode, gameMode).then(aiResult => {
             // Override AI decision with local strict cycle if needed
             const finalIsSniper = forcedSniper ? true : (forcedScanning ? false : aiResult.isSniper);
             const finalIsScanning = forcedScanning ? true : (forcedSniper ? false : aiResult.isScanning);
@@ -1099,7 +1156,7 @@ export default function App() {
             setIsAnalyzing(false);
           }).catch(err => {
             console.error("AI Prediction failed, falling back to local PRIME logic", err);
-            const fallbackRaw = runPrediction(json.data.list, nextIssue);
+            const fallbackRaw = runPrediction(listData, nextIssue);
             
             // Apply strict cycle logic to fallback too
             const finalIsSniper = forcedSniper;
@@ -1243,21 +1300,22 @@ export default function App() {
   }
 
   const is30s = gameMode === '30s';
+  const isTrx = gameMode === 'trx';
 
   return (
     <div className={`min-h-screen text-blue-100 font-sans selection:bg-blue-500/30 overflow-x-hidden p-4 md:p-8 relative transition-colors duration-1000 ${
-      is30s ? 'bg-[#040806]' : 'bg-[#050811]'
+      is30s ? 'bg-[#040806]' : (isTrx ? 'bg-[#0a0505]' : 'bg-[#050811]')
     }`}>
       {/* Background Glows */}
       <div className={`fixed top-[-10%] left-[-10%] w-[40%] h-[40%] blur-[120px] rounded-full pointer-events-none transition-all duration-1000 ${
-        is30s ? 'bg-emerald-600/20 shadow-[0_0_100px_rgba(16,185,129,0.2)]' : 'bg-blue-600/10'
+        is30s ? 'bg-emerald-600/20 shadow-[0_0_100px_rgba(16,185,129,0.2)]' : (isTrx ? 'bg-orange-600/20' : 'bg-blue-600/10')
       }`} />
       <div className={`fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] blur-[120px] rounded-full pointer-events-none transition-all duration-1000 ${
-        is30s ? 'bg-emerald-900/10' : 'bg-purple-600/10'
+        is30s ? 'bg-emerald-900/10' : (isTrx ? 'bg-rose-900/10' : 'bg-purple-600/10')
       }`} />
       
-      {is30s && (
-        <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+      {(is30s || isTrx) && (
+        <div className={`fixed inset-0 pointer-events-none opacity-[0.03] ${is30s ? "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" : "bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')]"} mix-blend-overlay`} />
       )}
 
       {showAdmin && currentUser && <AdminPanel user={currentUser} onClose={() => setShowAdmin(false)} />}
@@ -1341,6 +1399,20 @@ export default function App() {
             <Activity className={`w-4 h-4 ${gameMode === '60s' ? 'fill-current' : ''}`} />
             <span className="text-[11px] font-black tracking-widest">60S MODE</span>
           </button>
+
+          <div className="w-[1px] h-6 bg-white/5 mx-1" />
+
+          <button
+            onClick={() => setGameMode('trx')}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-500 ${
+              gameMode === 'trx' 
+                ? 'bg-gradient-to-r from-orange-600 to-rose-600 text-white shadow-[0_0_25px_rgba(249,115,22,0.5)] scale-105' 
+                : 'text-zinc-500 grayscale opacity-50 hover:opacity-100'
+            }`}
+          >
+            <TrendingUp className={`w-4 h-4 ${gameMode === 'trx' ? 'fill-current' : ''}`} />
+            <span className="text-[11px] font-black tracking-widest">TRX MODE</span>
+          </button>
         </div>
       </div>
 
@@ -1382,14 +1454,14 @@ export default function App() {
                   disabled={loading}
                   className={`group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold tracking-widest uppercase hover:bg-white/10 active:scale-95 transition-all shadow-xl`}
                 >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} ${gameMode === '30s' ? 'text-emerald-400' : 'text-blue-400'}`} />
-                  <span className={gameMode === '30s' ? 'text-emerald-400' : 'text-blue-400'}>
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} ${gameMode === '30s' ? 'text-emerald-400' : (gameMode === '60s' ? 'text-blue-400' : 'text-orange-400')}`} />
+                  <span className={gameMode === '30s' ? 'text-emerald-400' : (gameMode === '60s' ? 'text-blue-400' : 'text-orange-400')}>
                     {loading ? 'SYNCING...' : 'REFRESH'}
                   </span>
                 </button>
                 <div className="text-right">
                   <span className="text-zinc-500 text-[10px] uppercase tracking-[0.2em] font-black block">MYANMAR TIME</span>
-                  <span className={`font-mono text-base transition-colors duration-1000 ${gameMode === '30s' ? 'text-emerald-300' : 'text-blue-300'}`}>{mmTime}</span>
+                  <span className={`font-mono text-base transition-colors duration-1000 ${gameMode === '30s' ? 'text-emerald-300' : (gameMode === '60s' ? 'text-blue-300' : 'text-orange-300')}`}>{mmTime}</span>
                 </div>
               </div>
 
@@ -1399,46 +1471,46 @@ export default function App() {
                   className={`text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b transition-all duration-1000 ${
                     gameMode === '30s' 
                       ? 'from-emerald-300 via-emerald-500 to-emerald-700 drop-shadow-[0_0_20px_rgba(16,185,129,0.8)]' 
-                      : 'from-blue-300 via-blue-500 to-blue-700 drop-shadow-[0_0_20px_rgba(59,130,246,0.8)]'
+                      : (gameMode === '60s' ? 'from-blue-300 via-blue-500 to-blue-700 drop-shadow-[0_0_20px_rgba(59,130,246,0.8)]' : 'from-orange-300 via-rose-500 to-rose-700 drop-shadow-[0_0_20px_rgba(249,115,22,0.8)]')
                   } mb-1`}
                 >
-                  CK ULTRA HACK
+                  {gameMode === 'trx' ? 'TRX NEURAL HACK' : 'CK ULTRA HACK'}
                 </motion.h1>
                 <div className={`px-4 py-1 rounded-full border text-[10px] font-black tracking-widest transition-all duration-1000 ${
-                  gameMode === '30s' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+                  gameMode === '30s' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : (gameMode === '60s' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-orange-500/10 border-orange-500/20 text-orange-400')
                 }`}>
-                  {gameMode === '30s' ? 'FAST-TRACK ANALYZER [30S]' : 'PRECISION SCANNER [60S]'}
+                  {gameMode === '30s' ? 'FAST-TRACK ANALYZER [30S]' : (gameMode === '60s' ? 'PRECISION SCANNER [60S]' : 'BLOCKCHAIN PROTOCOL [TRX]')}
                 </div>
               </div>
             </header>
 
             <section className="relative group">
               <div className={`absolute -inset-0.5 rounded-3xl blur opacity-20 transition duration-1000 ${
-                gameMode === '30s' ? 'bg-gradient-to-r from-emerald-500 to-cyan-600' : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                gameMode === '30s' ? 'bg-gradient-to-r from-emerald-500 to-cyan-600' : (gameMode === '60s' ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gradient-to-r from-orange-500 to-rose-600')
               }`}></div>
               <div className="relative bg-[#0d121f]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl overflow-hidden">
                 
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-black block mb-1">
-                      {is30s ? ' [ STATUS: HYPER_DRIVE_ONLINE ] ' : 'System Status'}
+                      {is30s ? ' [ STATUS: HYPER_DRIVE_ONLINE ] ' : (isTrx ? ' [ NETWORK: TRON_MAINNET ] ' : 'System Status')}
                     </span>
                     <div className="flex items-center gap-2">
-                       {is30s && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />}
-                       <p className={`text-lg font-mono font-black italic transition-colors duration-1000 ${is30s ? 'text-emerald-400 uppercase tracking-tighter' : 'text-blue-300'}`}>
+                       {(is30s || isTrx) && <div className={`w-1.5 h-1.5 ${is30s ? 'bg-emerald-500' : 'bg-orange-500'} rounded-full animate-ping`} />}
+                       <p className={`text-lg font-mono font-black italic transition-colors duration-1000 ${is30s ? 'text-emerald-400 uppercase tracking-tighter' : (isTrx ? 'text-orange-400 uppercase tracking-tight' : 'text-blue-300')}`}>
                         {currentPred?.issueNumber || 'INITIALIZING...'}
                        </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold block"> Accuracy [တိကျမှု]</span>
-                    <p className={`text-xl font-black font-mono transition-colors duration-1000 ${is30s ? 'text-emerald-400' : 'text-blue-400'}`}>
+                    <p className={`text-xl font-black font-mono transition-colors duration-1000 ${is30s ? 'text-emerald-400' : (isTrx ? 'text-orange-400' : 'text-blue-400')}`}>
                       {winRate}%
-                      {is30s && winRate >= 95 && (
+                      {(is30s || isTrx) && winRate >= 95 && (
                         <motion.span 
                           animate={{ opacity: [0.4, 1, 0.4] }}
                           transition={{ duration: 1, repeat: Infinity }}
-                          className="ml-1 text-[8px] bg-emerald-500 text-black px-1 rounded inline-block align-middle"
+                          className={`ml-1 text-[8px] ${is30s ? 'bg-emerald-500' : 'bg-orange-500'} text-black px-1 rounded inline-block align-middle`}
                         >MAX</motion.span>
                       )}
                     </p>
@@ -1447,16 +1519,16 @@ export default function App() {
 
                 <div className="grid grid-cols-4 gap-2 mb-6">
                   {[
-                    { label: is30s ? 'RES' : 'Results', val: `${totalWins}/${totalLosses}`, color: 'text-zinc-400' },
-                    { label: is30s ? 'STRK' : 'Win Streak', val: streakData.winStreak, color: 'text-emerald-400' },
-                    { label: is30s ? 'L_STRK' : 'Lose Streak', val: streakData.loseStreak, color: 'text-rose-400' },
-                    { label: is30s ? 'MAX' : 'Best Series', val: streakData.maxWin, color: 'text-blue-400' }
+                    { label: (is30s || isTrx) ? 'RES' : 'Results', val: `${totalWins}/${totalLosses}`, color: 'text-zinc-400' },
+                    { label: (is30s || isTrx) ? 'STRK' : 'Win Streak', val: streakData.winStreak, color: 'text-emerald-400' },
+                    { label: (is30s || isTrx) ? 'L_STRK' : 'Lose Streak', val: streakData.loseStreak, color: 'text-rose-400' },
+                    { label: (is30s || isTrx) ? 'MAX' : 'Best Series', val: streakData.maxWin, color: 'text-blue-400' }
                   ].map((stat, i) => (
                     <div key={i} className={`bg-white/5 border border-white/10 p-2.5 flex flex-col items-center justify-center text-center transition-all ${
-                      is30s ? 'rounded-none border-emerald-500/20 skew-x-[-10deg]' : 'rounded-2xl'
+                      (is30s || isTrx) ? 'rounded-none border-emerald-500/20 skew-x-[-10deg]' : 'rounded-2xl'
                     }`}>
-                      <span className={`text-[8px] font-black uppercase tracking-tighter mb-1 ${is30s ? 'text-emerald-500/50' : 'text-zinc-500'}`}>{stat.label}</span>
-                      <span className={`text-sm font-black ${stat.color} ${is30s ? 'font-mono' : ''}`}>{stat.val}</span>
+                      <span className={`text-[8px] font-black uppercase tracking-tighter mb-1 ${(is30s || isTrx) ? (is30s ? 'text-emerald-500/50' : 'text-orange-500/50') : 'text-zinc-500'}`}>{stat.label}</span>
+                      <span className={`text-sm font-black ${stat.color} ${(is30s || isTrx) ? 'font-mono' : ''}`}>{stat.val}</span>
                     </div>
                   ))}
                 </div>
