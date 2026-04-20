@@ -52,7 +52,6 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
-import { getAIPrediction, AIPrediction } from './services/geminiService';
 import { 
   AreaChart, 
   Area, 
@@ -610,10 +609,10 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
         setRand60(data.rand60 || '5a9af45138ca49478b2609d2f89fc4e7');
         setRandTrx(data.randTrx || 'c185b621bdf64adb8dea945ec68ecc14');
       }
-    });
+    }, (err) => console.error("AdminConfig Sync Fail:", err));
     const unsubKeys = onSnapshot(query(collection(db, 'keys'), where('isActive', '==', true)), (snap) => {
       setKeys(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    }, (err) => console.error("AdminKeys Sync Fail:", err));
     return () => { unsubConfig(); unsubKeys(); };
   }, []);
 
@@ -947,7 +946,7 @@ export default function App() {
         setIsKeyAuthorized(false);
         setActiveKey(null);
       }
-    });
+    }, (err) => console.error("Key Monitor Fail:", err));
 
     return () => unsub();
   }, [activeKey, isAdminUser]);
@@ -974,7 +973,7 @@ export default function App() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'config', 'system'), (doc) => {
       setSystemConfig(doc.data());
-    });
+    }, (err) => console.error("SystemConfig Sync Fail:", err));
     return () => unsub();
   }, []);
 
@@ -1113,80 +1112,33 @@ export default function App() {
              }
           }
 
-          getAIPrediction(listData, isSniperMode, gameMode).then(aiResult => {
-            // Override AI decision with local strict cycle if needed
-            const finalIsSniper = forcedSniper ? true : (forcedScanning ? false : aiResult.isSniper);
-            const finalIsScanning = forcedScanning ? true : (forcedSniper ? false : aiResult.isScanning);
+          const localPred = runPrediction(listData, nextIssue);
+          
+          // Apply strict cycle logic to prediction
+          const finalIsSniper = forcedSniper;
+          const finalIsScanning = forcedScanning;
+          
+          const prediction: Prediction = {
+            ...localPred,
+            confidence: finalIsSniper ? 99.9 : localPred.confidence,
+            isSniper: finalIsSniper,
+            isScanning: finalIsScanning,
+            scanPhase: finalIsScanning ? currentPhase : undefined,
+            method: finalIsSniper 
+              ? "Sniper hit [100% Locked]" 
+              : finalIsScanning 
+                ? `Analyzing Pattern... [${currentPhase}/2]` 
+                : localPred.method
+          };
 
-            const newPred: Prediction = {
-              issueNumber: nextIssue,
-              bigSmall: aiResult.bigSmall,
-              number: aiResult.number,
-              colour: getColourFromNumber(aiResult.number),
-              status: "PENDING",
-              patternName: aiResult.patternToUse,
-              confidence: finalIsSniper ? 99.9 : aiResult.confidence,
-              method: finalIsSniper 
-                ? "Sniper hit [100% Locked]" 
-                : finalIsScanning 
-                  ? `Analyzing Pattern... [${currentPhase}/2]` 
-                  : aiResult.isSureShot 
-                    ? "REAL SURE SHOT" 
-                    : aiResult.isUltra 
-                      ? "ULTRA AI PREDICTION" 
-                      : "ELITE PREMIUM ANALYSIS",
-              reasoning: aiResult.reasoning,
-              isAI: true,
-              isSureShot: aiResult.isSureShot,
-              isUltra: aiResult.isUltra,
-              isSniper: finalIsSniper,
-              isScanning: finalIsScanning,
-              scanPhase: finalIsScanning ? currentPhase : undefined,
-              isQuotaMode: aiResult.isQuotaMode,
-              riskFactor: aiResult.riskFactor
-            };
-            
-            // Remove existing prediction for THIS issue if mode changed
-            setPredictions(prev => {
-              const filtered = prev.filter(p => p.issueNumber !== nextIssue);
-              return [newPred, ...filtered].slice(0, 100);
-            });
-            
-            setCurrentPattern(aiResult.patternToUse);
-            setIsAnalyzing(false);
-          }).catch(err => {
-            console.error("AI Prediction failed, falling back to local PRIME logic", err);
-            const fallbackRaw = runPrediction(listData, nextIssue);
-            
-            // Apply strict cycle logic to fallback too
-            const finalIsSniper = forcedSniper;
-            const finalIsScanning = forcedScanning;
-            
-            const fallback: Prediction = {
-              ...fallbackRaw,
-              confidence: finalIsSniper ? 99.9 : fallbackRaw.confidence,
-              isSniper: finalIsSniper,
-              isScanning: finalIsScanning,
-              scanPhase: finalIsScanning ? currentPhase : undefined,
-              method: finalIsSniper 
-                ? "Sniper hit [100% Locked]" 
-                : finalIsScanning 
-                  ? `Analyzing Pattern... [${currentPhase}/2]` 
-                  : fallbackRaw.method
-            };
-
-            setPredictions(prev => {
-              const filtered = prev.filter(p => p.issueNumber !== nextIssue);
-              return [fallback, ...filtered].slice(0, 100);
-            });
-            setIsAnalyzing(false);
-            
-            if (autoSwitch) {
-              const patterns = Math.random() > 0.4 ? PREMIUM_PATTERNS : PRIME_PATTERNS;
-              const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-              setCurrentPattern(randomPattern);
-            }
+          setPredictions(prev => {
+            const filtered = prev.filter(p => p.issueNumber !== nextIssue);
+            return [prediction, ...filtered].slice(0, 100);
           });
+          
+          if (localPred.patternName) setCurrentPattern(localPred.patternName);
+          processedKey.current = currentKey;
+          setTimeout(() => setIsAnalyzing(false), 500);
           processedKey.current = currentKey;
         }
       }
