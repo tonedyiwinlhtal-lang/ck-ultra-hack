@@ -23,20 +23,28 @@ async function startServer() {
         timestamp: bodyData.timestamp || timestamp
       };
 
-      const response = await fetch("https://ckygjf6r.com/api/webapi/GetNoaverageEmerdList", {
+      const domain = req.headers['x-upstream-domain'] || "ckygjf6r.com";
+      const baseUrl = `https://${domain}`;
+      
+      const response = await fetch(`${baseUrl}/api/webapi/GetNoaverageEmerdList`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json;charset=UTF-8",
           "Accept": "application/json, text/plain, */*",
           "Authorization": req.headers.authorization || "",
-          "Ar-Origin": "https://www.cklottery.online",
-          "Referer": "https://www.cklottery.online/",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+          "Ar-Origin": baseUrl,
+          "Origin": baseUrl,
+          "Referer": `${baseUrl}/`,
+          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
           "X-Requested-With": "XMLHttpRequest",
-          "Accept-Language": "en-US,en;q=0.9"
+          "Accept-Language": "en-US,en;q=0.9",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site",
+          "Priority": "u=1, i"
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(15000)
       } as any);
 
       if (!response.ok) {
@@ -64,19 +72,27 @@ async function startServer() {
         timestamp: bodyData.timestamp || timestamp
       };
 
-      const response = await fetch("https://ckygjf6r.com/api/webapi/GetTRXNoaverageEmerdList", {
+      const domain = req.headers['x-upstream-domain'] || "ckygjf6r.com";
+      const baseUrl = `https://${domain}`;
+
+      const response = await fetch(`${baseUrl}/api/webapi/GetTRXNoaverageEmerdList`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json;charset=UTF-8",
           "Accept": "application/json, text/plain, */*",
           "Authorization": req.headers.authorization || "",
-          "Ar-Origin": "https://www.cklottery.top",
-          "Referer": "https://www.cklottery.top/",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-          "X-Requested-With": "XMLHttpRequest"
+          "Ar-Origin": baseUrl,
+          "Origin": baseUrl,
+          "Referer": `${baseUrl}/`,
+          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+          "X-Requested-With": "XMLHttpRequest",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "cross-site"
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(15000)
       } as any);
 
       if (!response.ok) {
